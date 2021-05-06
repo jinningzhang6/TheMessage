@@ -4,201 +4,221 @@ using UnityEngine;
 using Photon.Pun;
 using UnityEngine.UI;
 using Photon.Realtime;
-using System.Linq;
 using ExitGames.Client.Photon;
 using Hashtable = ExitGames.Client.Photon.Hashtable;
 
-public class InGame : MonoBehaviourPunCallbacks, IOnEventCallback
+public class InGame : ServerCommand, IOnEventCallback
 {
-    public GameObject[] playerUIs;
-    private GameObject[] newPlayerUIS;
-    public Text playerTurnUI;
+    public GameObject[] playerUIs, newPlayerUIS;
+    public GameObject[] passingCardUIs, newPassingCardUIs;
+    public GameObject turnPrompt, sendMessageButton, endTurnButton, incomingManipulation, useSpellButton, cancelSpellButton, MainSceneObjects;
+    public Text playerTurnUI, cardsLeftUI, reminderText;
 
-    private int playersCount;
-    private int turnCount;
-    private Hashtable playerPositions;
-    private Hashtable playerSequences;
-    private Deck Deck;
-    private List<Card> serverDeck;
+    public GameObject openCard;
+    private InGameCommand inGameCommand;
+    private CardListing cardListing;
+    public Player currentTurnPlayer;
+    public Vector3 passingCardPosition;
 
-    private bool roundZero=true;
+    public bool shouldAnimatePassingCard;
+    public bool usingSpell;
+    private int subTurnCount;
+    private int currentCardId;
 
-    public const int TurnStartEventCode = 1;
-    public const int DrawCardEventCode = 2;
-    public const int SendCardEventCode = 3;
-    //public const int ShipoEventCode = 4;
+    private const int TurnStartEventCode = 1;
+    private const int SendCardEventCode = 2;
+    private const int SpellCardEventCode = 3;
+    private const int ToEndTurnEventCode = 4;
 
-    private void Awake()
+    protected override void Awake()
     {
-        playersCount = PhotonNetwork.CurrentRoom.PlayerCount;//3;// 
-        turnCount = 0;
-        populateCurrentPlayerUIs(playersCount);
-        playerPositions = new Hashtable();
-        playerSequences = new Hashtable();
-        PhotonNetwork.AddCallbackTarget(this);//+ listener -> notified
+        base.Awake();
+        subTurnCount = 0;
+        currentCardId = -1;
+        usingSpell = false;
+        currentTurnPlayer = null;
+        shouldAnimatePassingCard = false;
+        incomingManipulation.SetActive(false);
+        sendMessageButton.SetActive(false);
+        endTurnButton.SetActive(false);
+        cancelSpellButton.SetActive(false);
+        reminderText.gameObject.SetActive(false);
+        inGameCommand = MainSceneObjects.GetComponent<InGameCommand>();
+        cardListing = MainSceneObjects.GetComponent<CardListing>();
     }
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        setUI();
-        if(PhotonNetwork.IsMasterClient) startGame();
+    void Start() {
+        populateEachPlayerUI(playersCount);
+        assignPlayerPosition(newPlayerUIS);
+        turnStartDistrubuteCards();
+        if (PhotonNetwork.IsMasterClient) startGame();
     }
 
-    private void populateCurrentPlayerUIs(int count)
+    private void populateEachPlayerUI(int count)
     {
         newPlayerUIS = new GameObject[count];
+        newPassingCardUIs = new GameObject[count];
         HashSet<int> set = new HashSet<int>();
         if (count < 7)
         {
-            Destroy(playerUIs[2].gameObject);
-            Destroy(playerUIs[6].gameObject);
+            Destroy(playerUIs[2].gameObject); Destroy(playerUIs[6].gameObject);
+            Destroy(passingCardUIs[2].gameObject); Destroy(passingCardUIs[6].gameObject);
             set.Add(2); set.Add(6);
         }
         if (count < 5)
         {
             Destroy(playerUIs[3].gameObject); Destroy(playerUIs[5].gameObject);
+            Destroy(passingCardUIs[3].gameObject); Destroy(passingCardUIs[5].gameObject);
             set.Add(3); set.Add(5);
         }
         if (count == 5 || count == 7 || count == 3)
         {
             set.Add(4);
-            Destroy(playerUIs[4].gameObject);
+            Destroy(playerUIs[4].gameObject); Destroy(passingCardUIs[4].gameObject);
         }
         for(int i=0,j=0; i<playerUIs.Length;i++)
         {
-            if (!set.Contains(i)) newPlayerUIS[j++] = playerUIs[i];
-        }
-    }
-
-    private void setUI()
-    {
-        int sequence = (int)PhotonNetwork.CurrentRoom.CustomProperties["sequence"];
-        int pos = -1;
-        for(int i = 0; i < playersCount; i++)
-        {
-            Player player = (Player)PhotonNetwork.CurrentRoom.CustomProperties[$"{sequence + i}"];
-            if (player == null)
+            if (!set.Contains(i))
             {
-                Debug.Log($"This player is null.");
-                continue;
+                newPlayerUIS[j] = playerUIs[i];
+                newPassingCardUIs[j++] = passingCardUIs[i];
             }
-            Debug.Log($"This player not null: name:{player.NickName}, isLocalPlayer?{player.IsLocal}, isMasterClient?{player.IsMasterClient}.");//to be deleted
-            if (player.IsLocal) pos = i;
-            playerSequences.Add($"{i}", player);// nick 0, bill 1, eugene 2
-        }
-        if (pos == -1) return;
-        Debug.Log($"Position found: {pos}");
-        int originalPos = pos;
-        int positionIndex = 0;
-        bool passed = false;
-
-        while(positionIndex < playersCount)
-        {
-            int posIndex = pos % playersCount;
-            if (passed && posIndex == originalPos) break;
-            Player player = (Player)PhotonNetwork.CurrentRoom.CustomProperties[$"{(posIndex + sequence)}"];
-            newPlayerUIS[positionIndex].GetComponentsInChildren<Text>()[5].text = player.NickName;
-            playerPositions.Add(player, positionIndex);
-            positionIndex++;
-            pos++;
-            if(!passed) passed = true;
         }
     }
 
-    public override void OnRoomPropertiesUpdate(ExitGames.Client.Photon.Hashtable propertiesThatChanged)
-    {
-        Debug.Log($"[OnRoomPropertiesUpdate]: UPDATING");
-
-        if (roundZero && PhotonNetwork.IsMasterClient)
-        {
-            Deck = new Deck();
-            serverDeck = Deck.shuffleCards();//洗牌
-            distributeCards();
-            roundZero = false;
-        }
-    }
-
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)//2
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
     {
         if (changedProps.ContainsKey("playerStartDeck"))
         {
             object[] cards = (object[])changedProps["playerStartDeck"];
-            newPlayerUIS[(int)playerPositions[targetPlayer]].GetComponentsInChildren<Text>()[0].text = $"{cards.Length}";//3 + 2 = 5;
+            Debug.Log($"player{targetPlayer.NickName} propertiesupdate: card length: {cards.Length}");
+            newPlayerUIS[(int)playerPositions[targetPlayer]].GetComponentsInChildren<Text>()[0].text = $"{cards.Length}";
         }
-        
-    }
-
-    private void distributeCards() 
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-
-        foreach (Player player in playerSequences.Values)
+        if (changedProps.ContainsKey("playerBlueMessage"))
         {
-            DrawCardsForPlayer(player, 3);
+            int msgs = (int)changedProps["playerBlueMessage"];
+            newPlayerUIS[(int)playerPositions[targetPlayer]].GetComponentsInChildren<Text>()[1].text = $"{msgs}";
+        }
+        if (changedProps.ContainsKey("playerRedMessage"))
+        {
+            int msgs = (int)changedProps["playerRedMessage"];
+            newPlayerUIS[(int)playerPositions[targetPlayer]].GetComponentsInChildren<Text>()[2].text = $"{msgs}";
+        }
+        if (changedProps.ContainsKey("playerBlackMessage"))
+        {
+            int msgs = (int)changedProps["playerBlackMessage"];
+            newPlayerUIS[(int)playerPositions[targetPlayer]].GetComponentsInChildren<Text>()[3].text = $"{msgs}";
         }
     }
 
-    private void startGame()
-    {//room.customproperties -> hashtable(object,object)//string,int
-        // int 1 - 113. Deck->feature/description. Server -> player (int)id. (int)id -> other players, yes? id->card(red?black?) -> +black, +red
-        // player custom properties.Add("black",1) -> server -> my screen -> player.blackUI +1;
-        object[] content = new object[] { turnCount };
-        RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };
-        PhotonNetwork.RaiseEvent(TurnStartEventCode, content, raiseEventOptions, SendOptions.SendReliable);
-        Debug.Log($"Startting the GGGGAAAMMMME");
-    }
-
-    private void OnDestroy()
-    {
-        PhotonNetwork.RemoveCallbackTarget(this);
-    }
-
-    public void OnEvent(EventData photonEvent)
+    public void OnEvent(EventData photonEvent)//system triggers
     {
         byte eventCode = photonEvent.Code;
-        Debug.Log($"[OnEvent]: RECEIVING DATA {eventCode}");
 
         if (eventCode == TurnStartEventCode)
         {
+            openCard.SetActive(false);
             object[] data = (object[])photonEvent.CustomData;// turn?
-
-            Player playerToStart = (Player)playerSequences[$"{data[0]}"];// 0 -> nick, 1 -> bill
-            playerTurnUI.text = playerToStart.NickName;
-            DrawCardsForPlayer(playerToStart, 2);
+            turnCount = (int)data[0] % playersCount;
+            subTurnCount = turnCount;
+            currentTurnPlayer = (Player)playerSequences[$"{turnCount}"];// 0 -> nick, 1 -> bill, 2 -> Eugene
+            playerTurnUI.text = currentTurnPlayer.NickName;
+            turnPrompt.GetComponent<Text>().text = $"{currentTurnPlayer.NickName}的回合, 抽取两张牌";
+            if (currentTurnPlayer.IsLocal) sendMessageButton.SetActive(true);//show / hide
+            else sendMessageButton.SetActive(false);
+            if (PhotonNetwork.IsMasterClient) DrawCardsForPlayer(currentTurnPlayer, 2);
+            passingCardPosition = newPassingCardUIs[(int)playerPositions[currentTurnPlayer]].transform.position;
+            shouldAnimatePassingCard = false;
+        }
+        else if (eventCode == SendCardEventCode)
+        {
+            shouldAnimatePassingCard = true;
+            object[] data = (object[])photonEvent.CustomData;
+            subTurnCount = (int)data[0] % playersCount;
+            currentCardId = (int)data[1];
+            Player playerToStart = (Player)playerSequences[$"{subTurnCount}"];
+            turnPrompt.GetComponent<Text>().text = $"等待 {playerToStart.NickName}的回复";
+            if (playerToStart.IsLocal) incomingManipulation.SetActive(true);
+            else incomingManipulation.SetActive(false);
+            passingCardPosition = newPassingCardUIs[(int)playerPositions[playerToStart]].transform.position;
+        }
+        else if(eventCode == ToEndTurnEventCode)
+        {
+            Player playerToStart = (Player)playerSequences[$"{turnCount}"];
+            turnPrompt.GetComponent<Text>().text = $"{((Player)playerSequences[$"{subTurnCount}"]).NickName}收到了情报";
+            if (playerToStart!=null && playerToStart.IsLocal) endTurnButton.SetActive(true);
+            openCard.SetActive(true);
+            openCard.GetComponentsInChildren<Image>()[1].sprite = Deck[currentCardId].image;
+            currentCardId = -1;
+            shouldAnimatePassingCard = false;
         }
     }
 
-    public void DrawCardsForPlayer(Player player, int cardsNumToDraw)
+    /* Command Section*/
+    public void sendCard()
     {
-        if (!PhotonNetwork.IsMasterClient) return;
-        ExitGames.Client.Photon.Hashtable table = player.CustomProperties;
-        if (table == null) table = new ExitGames.Client.Photon.Hashtable();
-
-        object[] existingCards = new object[0];
-        object[] startDeck;
-        if (table.ContainsKey("playerStartDeck"))
-        {
-            existingCards = (object[])table["playerStartDeck"];
-        }
-
-        startDeck = new object[cardsNumToDraw + existingCards.Length];
-        int i = 0;
-        for (; i < existingCards.Length; i++)
-        {
-            startDeck[i] = existingCards[i];
-        }
-        for (; i < startDeck.Length; i++)
-        {
-            startDeck[i] = serverDeck.LastOrDefault().id;
-            if (serverDeck.LastOrDefault() == null) break;
-            serverDeck.Remove(serverDeck.LastOrDefault());
-        }
-        
-        
-        if (table.ContainsKey("playerStartDeck")) table["playerStartDeck"] = startDeck;
-        else table.Add("playerStartDeck", startDeck);
-        player.SetCustomProperties(table);
+        if (CardListing.selectedCard == null && currentCardId==-1) return;//selectedCard->I sent, currentCardId->OtherPlayer sent
+        if (currentCardId==-1) currentCardId = CardListing.selectedCard.cardId;
+        raiseCertainEvent(SendCardEventCode, new object[] { ++subTurnCount, currentCardId });
+        cardListing.removeSelectedCardFromHand();
+        incomingManipulation.SetActive(false);
+        sendMessageButton.SetActive(false);
+        CardListing.selectedCard = null;
     }
 
+    public void useSpellCard(int cardId, int cardType, string playerNickName)
+    {
+        object[] content = new object[] {(int)playerSequencesByName[PhotonNetwork.LocalPlayer.NickName],cardId, (int)playerSequencesByName[playerNickName], cardType};
+        raiseCertainEvent(SpellCardEventCode, content);
+        cardListing.removeSelectedCardFromHand();
+        CardListing.selectedCard = null;
+    }
+
+    public void acceptCard()
+    {
+        if (currentCardId == -1) return;
+        int blueColor = Deck[currentCardId].blue, redColor = Deck[currentCardId].red, blackColor = Deck[currentCardId].black;
+        if (blueColor!=0) assignMessage(0);
+        if (redColor !=0) assignMessage(1);
+        if (blackColor!=0)assignMessage(2);
+        incomingManipulation.SetActive(false);
+        raiseCertainEvent(ToEndTurnEventCode, new object[] { currentCardId });
+    }
+
+    public void endTurn()
+    {
+        resetUserDebuff();
+        ++turnCount;
+        startGame();
+        endTurnButton.SetActive(false);
+    }
+
+    public void useSpell()
+    {
+        if (CardListing.selectedCard == null) return;
+        int type = CardListing.selectedCard.cardType;
+        if (!isPlayerCastAllowed(type))
+        {
+            reminderText.text = $"You can not use {spellCardsName[CardListing.selectedCard.cardType]} in other players turn";
+            reminderText.gameObject.SetActive(true);
+            return;
+        }
+        if (type == 2)
+        {
+            useSpellCard(CardListing.selectedCard.cardId, CardListing.selectedCard.cardType, PhotonNetwork.LocalPlayer.NickName);
+            return;
+        }
+        reminderText.gameObject.SetActive(false);
+        useSpellButton.SetActive(false);
+        cancelSpellButton.SetActive(true);
+        usingSpell = true;
+    }
+
+    public void cancelSpell()
+    {
+        cancelSpellButton.SetActive(false);
+        reminderText.gameObject.SetActive(false);
+        useSpellButton.SetActive(true);
+        usingSpell = false;
+    }
 }
