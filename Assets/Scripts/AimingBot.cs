@@ -43,7 +43,7 @@ public class AimingBot : MonoBehaviour
     void clickOnCharIcon()
     {
         if (!inGame.usingSpell || CardListing.selectedCard == null) return;
-        inGame.useSpellCard(CardListing.selectedCard.cardId, CardListing.selectedCard.cardType,playerName);
+        inGame.useSpellCard(CardListing.selectedCard.cardId, CardListing.selectedCard.cardType,playerName);// playername-> target player
         inGame.cancelSpell();
     }
 }

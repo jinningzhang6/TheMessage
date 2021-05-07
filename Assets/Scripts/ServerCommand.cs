@@ -109,12 +109,20 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         PhotonNetwork.LocalPlayer.SetCustomProperties(table);
     }
 
-    protected bool isPlayerCastAllowed(int type)
+    // 相关信息 Eugene！
+    protected bool isPlayerCastAllowed(int type)//必须在自己的回合 使用的卡片
     {
-        if(type==0 || type == 2)
+        if(type==0 || type == 2)//锁定 增援
         {
             if (!((Player)playerSequences[$"{turnCount}"]).IsLocal) return false;
         }
+        return true;
+    }
+
+    protected bool isCastedPlayerAllowed(int type, int player,int subTurn)//点击用户图片后 系统确认是否可以触发
+    {
+        if (type == 1 && player == turnCount) return false;//调虎离山不能给发送者
+        if (type == 2 && player != subTurn) return false;//必须到此人面前 才能使用[转移]
         return true;
     }
 

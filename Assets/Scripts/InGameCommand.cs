@@ -19,11 +19,13 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     public GameObject acceptButton;
     public GameObject declineButton;
     private Player currentTurnPlayer;//subturn
+    private SpellCardsListing spellCardsListing;
 
     private const int TurnStartEventCode = 1;
     private const int SendCardEventCode = 2;
     private const int SpellCardEventCode = 3;
-    
+    private const int ToEndTurnEventCode = 4;
+
     private void Awake()
     {
         playersCount = PhotonNetwork.CurrentRoom.PlayerCount;//3;// 
@@ -33,6 +35,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     void Start()
     {
         inGame = game_object.GetComponent<InGame>();
+        spellCardsListing = game_object.GetComponent<SpellCardsListing>();
         playerPositions = inGame.playerPositions;
         playerSequences = inGame.playerSequences;
         newPlayerUIS = inGame.newPlayerUIS;
@@ -54,9 +57,11 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
             object[] data = (object[])photonEvent.CustomData;
             Debug.Log($"data length: {data.Length}");
             int spellType = (int)data[3];
-            if (spellType==0) SpellLock((int)data[0], (int)data[2]);
-            if (spellType==1) SpellAway((int)data[0], (int)data[2]);
-            if (spellType == 2) SpellHelp((int)data[0]);
+            spellCardsListing.AddSpellCard((int)data[1]);
+            if (spellType == 0) SpellLock((int)data[0], (int)data[2]);
+            if (spellType == 1) SpellAway((int)data[0], (int)data[2]);
+            if (spellType == 2) SpellHelp((int)data[2]);
+            if (spellType == 3) SpellRedirect((int)data[0],(int)data[2]);
         }
         else if (eventCode == SendCardEventCode)
         {
@@ -64,6 +69,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
             currentTurnPlayer = (Player)playerSequences[$"{(int)data[0] % playersCount}"];
             if (currentTurnPlayer.IsLocal) checkIfUserDebuff(currentTurnPlayer);
         }
+        else if (eventCode == ToEndTurnEventCode) spellCardsListing.ResetSpellCardListing();
     }
 
     private void SpellLock(int castPlayer, int toPlayer)
@@ -77,6 +83,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     private void SpellAway(int castPlayer, int toPlayer)
     {
         Player _player = (Player)playerSequences[$"{toPlayer}"];
+        if (currentTurnPlayer == _player) acceptButton.SetActive(false);
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了调虎离山";
         setPlayerDebuff(_player, "awayed", true, "调");
     }
@@ -86,9 +93,17 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 使用了增援";
         if (PhotonNetwork.IsMasterClient)
         {
-            int numBlack = inGame.getPlayerBlackMessage();//把增援给房主了
-            inGame.DrawCardsForPlayer(PhotonNetwork.LocalPlayer, numBlack + 1);
+            int numBlack = inGame.getPlayerBlackMessage();
+            inGame.DrawCardsForPlayer((Player)playerSequences[$"{castPlayer}"], numBlack + 1);
         }
+    }
+
+    private void SpellRedirect(int castPlayer, int toPlayer)//spell, spell之后 卡牌会到谁的面前
+    {
+        Player _player = (Player)playerSequences[$"{toPlayer}"];
+        //raiseEvent -> castPlayer (if(PhotonNetwork.isMasterClient))-> raiseEvent -> 卡牌会到谁的面前 // avoid duplicate
+        //setPlayerDebuff
+        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了转移";
     }
 
     private void setPlayerDebuff(Player player,string debuffName,bool debuff,string keyword)
@@ -105,11 +120,13 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
 
     private void checkIfUserDebuff(Player player)
     {
+        acceptButton.SetActive(true);
+        declineButton.SetActive(true);
         Hashtable table = player.CustomProperties;
         if (table == null) table = new Hashtable();
         if (table.ContainsKey("locked") && (bool)table["locked"]) declineButton.SetActive(false);
         if (table.ContainsKey("awayed") && (bool)table["awayed"]) acceptButton.SetActive(false);
-        //if(table.ContainsKey("redirect") && (bool)table["redirect"]) declineButton.SetActive(false);
+        //if(table.ContainsKey("redirect") && (bool)table["redirect"]) declineButton.SetActive(false);//不可以不接收
     }
 
     private void resetUserDebuffUI()

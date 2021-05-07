@@ -47,6 +47,11 @@ public class Deck
         deck.Add(new Card(id++, 0, 0, 1, spellCards[10], 2));//help_black 2
         deck.Add(new Card(id++, 0, 0, 1, spellCards[10], 2));
         deck.Add(new Card(id++, 1, 0, 0, spellCards[11], 2));//help_blue 1
+        deck.Add(new Card(id++, 0, 1, 0, spellCards[12], 3));
+        deck.Add(new Card(id++, 0, 1, 0, spellCards[12], 3));//redirect 2
+        deck.Add(new Card(id++, 0, 0, 1, spellCards[13], 3));
+        deck.Add(new Card(id++, 1, 0, 0, spellCards[14], 3));
+        deck.Add(new Card(id++, 1, 0, 0, spellCards[14], 3));
     }
 
     public List<Card> getDeck()

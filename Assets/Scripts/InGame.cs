@@ -166,8 +166,10 @@ public class InGame : ServerCommand, IOnEventCallback
         CardListing.selectedCard = null;
     }
 
+    //aimingbot -> ingame.useSpellCard
     public void useSpellCard(int cardId, int cardType, string playerNickName)
     {
+        if (!isCastedPlayerAllowed(cardType, (int)playerSequencesByName[playerNickName], subTurnCount)) return;
         object[] content = new object[] {(int)playerSequencesByName[PhotonNetwork.LocalPlayer.NickName],cardId, (int)playerSequencesByName[playerNickName], cardType};
         raiseCertainEvent(SpellCardEventCode, content);
         cardListing.removeSelectedCardFromHand();
@@ -193,25 +195,30 @@ public class InGame : ServerCommand, IOnEventCallback
         endTurnButton.SetActive(false);
     }
 
+    //点击了 'use' button
+    //spell 0->锁定 1->调虎离山 2->增援 3->转移
     public void useSpell()
     {
         if (CardListing.selectedCard == null) return;
-        int type = CardListing.selectedCard.cardType;
-        if (!isPlayerCastAllowed(type))
+        int type = CardListing.selectedCard.cardType;// lock? redirect?
+        if (!isPlayerCastAllowed(type))// 不允许操作 -》在别人turn里面 使用了 锁定/增援
         {
             reminderText.text = $"You can not use {spellCardsName[CardListing.selectedCard.cardType]} in other players turn";
             reminderText.gameObject.SetActive(true);
             return;
         }
-        if (type == 2)
+        if (type == 2)//直接触发条件 -> 增援 可直接触发 不需要点击任何头像
         {
             useSpellCard(CardListing.selectedCard.cardId, CardListing.selectedCard.cardType, PhotonNetwork.LocalPlayer.NickName);
             return;
         }
-        reminderText.gameObject.SetActive(false);
-        useSpellButton.SetActive(false);
-        cancelSpellButton.SetActive(true);
-        usingSpell = true;
+
+        //type==0, 1, 3
+        //既满足条件 而又需要选择 target
+        reminderText.gameObject.SetActive(false);// error text 消失
+        useSpellButton.SetActive(false); // use button 消失
+        cancelSpellButton.SetActive(true);// cancel button 显现
+        usingSpell = true; // 提示user相关 animation动态
     }
 
     public void cancelSpell()
