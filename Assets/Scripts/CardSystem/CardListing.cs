@@ -27,7 +27,7 @@ public class CardListing : MonoBehaviourPunCallbacks
         selectedCard = null;
     }
 
-    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
+    public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)//playermessage object[] {13, 14, 15};
     {
         if (!targetPlayer.IsLocal || !changedProps.ContainsKey("playerStartDeck")) return;
         object[] cards = (object[])changedProps["playerStartDeck"];//5

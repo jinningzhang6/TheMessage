@@ -201,9 +201,9 @@ public class InGame : ServerCommand, IOnEventCallback
     {
         if (CardListing.selectedCard == null) return;
         int type = CardListing.selectedCard.cardType;// lock? redirect?
-        if (!isPlayerCastAllowed(type))// 不允许操作 -》在别人turn里面 使用了 锁定/增援
+        if (!isPlayerCastAllowed(type,subTurnCount))// 不允许操作 -》在别人turn里面 使用了 锁定/增援
         {
-            reminderText.text = $"You can not use {spellCardsName[CardListing.selectedCard.cardType]} in other players turn";
+            reminderText.text = $"You can not use {spellCardsName[CardListing.selectedCard.cardType]} now";
             reminderText.gameObject.SetActive(true);
             return;
         }
@@ -227,5 +227,15 @@ public class InGame : ServerCommand, IOnEventCallback
         reminderText.gameObject.SetActive(false);
         useSpellButton.SetActive(true);
         usingSpell = false;
+    }
+
+    public int getSubTurn()
+    {
+        return subTurnCount;
+    }
+
+    public int getCurrentCardId()
+    {
+        return currentCardId;
     }
 }

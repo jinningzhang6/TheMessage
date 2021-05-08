@@ -110,20 +110,26 @@ public class ServerCommand : MonoBehaviourPunCallbacks
     }
 
     // 相关信息 Eugene！
-    protected bool isPlayerCastAllowed(int type)//必须在自己的回合 使用的卡片
+    protected bool isPlayerCastAllowed(int type, int subTurn)//必须在自己的回合 使用的卡片
     {
         if(type==0 || type == 2)//锁定 增援
         {
             if (!((Player)playerSequences[$"{turnCount}"]).IsLocal) return false;
         }
+        if(type==3 && subTurn!= (int)playerSequencesByName[$"{PhotonNetwork.LocalPlayer.NickName}"]) return false;
         return true;
     }
 
     protected bool isCastedPlayerAllowed(int type, int player,int subTurn)//点击用户图片后 系统确认是否可以触发
     {
         if (type == 1 && player == turnCount) return false;//调虎离山不能给发送者
-        if (type == 2 && player != subTurn) return false;//必须到此人面前 才能使用[转移]
-        return true;
+        if (type == 3 && player == subTurn)
+        {
+            Debug.Log($"cannot cast in [isCastedPlayerAllowed] type: {type} player int : {player}, subTurn: {subTurn}");
+            return false;//必须到此人面前 才能使用[转移]
+        }
+
+        return checkPriority(type, (Player)playerSequences[$"{player}"]);
     }
 
     public void resetUserDebuff()
@@ -133,6 +139,7 @@ public class ServerCommand : MonoBehaviourPunCallbacks
             Hashtable table = getPlayerHashTable(player);
             if (table.ContainsKey("locked") && (bool)table["locked"]) table["locked"] = false;
             if (table.ContainsKey("awayed") && (bool)table["awayed"]) table["awayed"] = false;
+            if (table.ContainsKey("redirected") && (bool)table["redirected"]) table["redirected"] = false;
             player.SetCustomProperties(table);
         }
     }
@@ -151,7 +158,23 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         return table;
     }
 
-    protected void raiseCertainEvent(byte eventCode, object[] content)
+    private bool checkPriority(int type, Player player)//1
+    {
+        Hashtable table = getPlayerHashTable(player);
+        if (type == 0)
+        {
+            if (table.ContainsKey("redirected") && (bool)table["redirected"]) return false;
+        }
+        else if (type==1)
+        {
+            if (table.ContainsKey("redirected") && (bool)table["redirected"]) return false;
+            if (table.ContainsKey("locked") && (bool)table["locked"]) return false;
+        }
+        
+        return true;
+    }
+
+    public void raiseCertainEvent(byte eventCode, object[] content)
     {
         RaiseEventOptions raiseEventOptions = new RaiseEventOptions { Receivers = ReceiverGroup.All };//Event
         PhotonNetwork.RaiseEvent(eventCode, content, raiseEventOptions, SendOptions.SendReliable);

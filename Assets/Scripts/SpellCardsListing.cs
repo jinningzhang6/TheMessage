@@ -34,6 +34,7 @@ public class SpellCardsListing : MonoBehaviour
         for(int i = 0; i < listing.Count; i++)
         {
             Destroy(listing[i].gameObject);
+            listing.RemoveAt(i);
         }
     }
 

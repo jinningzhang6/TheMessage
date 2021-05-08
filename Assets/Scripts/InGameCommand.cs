@@ -77,7 +77,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         Player _player = (Player)playerSequences[$"{toPlayer}"];
         if (currentTurnPlayer == _player) declineButton.SetActive(false);
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了锁定";
-        setPlayerDebuff(_player, "locked", true, "锁");
+        if (PhotonNetwork.IsMasterClient)  setPlayerDebuff(_player, "locked", true, "锁");
     }
 
     private void SpellAway(int castPlayer, int toPlayer)
@@ -85,7 +85,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         Player _player = (Player)playerSequences[$"{toPlayer}"];
         if (currentTurnPlayer == _player) acceptButton.SetActive(false);
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了调虎离山";
-        setPlayerDebuff(_player, "awayed", true, "调");
+        if (PhotonNetwork.IsMasterClient) setPlayerDebuff(_player, "awayed", true, "调");
     }
 
     private void SpellHelp(int castPlayer)
@@ -98,11 +98,16 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         }
     }
 
-    private void SpellRedirect(int castPlayer, int toPlayer)//spell, spell之后 卡牌会到谁的面前
+    private void SpellRedirect(int castPlayer, int toPlayer)
     {
+        Debug.Log("doing in SpellRedirect");
         Player _player = (Player)playerSequences[$"{toPlayer}"];
-        //raiseEvent -> castPlayer (if(PhotonNetwork.isMasterClient))-> raiseEvent -> 卡牌会到谁的面前 // avoid duplicate
-        //setPlayerDebuff
+        if (PhotonNetwork.IsMasterClient)
+        {
+            setPlayerDebuff((Player)playerSequences[$"{toPlayer}"], "redirected", true, "转");
+            inGame.raiseCertainEvent(SendCardEventCode, new object[] { toPlayer, inGame.getCurrentCardId() });
+            Debug.Log("cannot cast in SpellRedirect");
+        }
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了转移";
     }
 
@@ -113,7 +118,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         if (!table.ContainsKey(debuffName)) table.Add(debuffName, debuff);
         else table[debuffName] = debuff;
 
-        debuff_indicatorUI[(int)playerPositions[player]].SetActive(debuff);
+        debuff_indicatorUI[(int)playerPositions[player]].SetActive(debuff);//
         foreach(Text text in debuff_indicatorUI[(int)playerPositions[player]].GetComponentsInChildren<Text>()) text.text = keyword;
         player.SetCustomProperties(table);
     }
@@ -124,9 +129,9 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         declineButton.SetActive(true);
         Hashtable table = player.CustomProperties;
         if (table == null) table = new Hashtable();
-        if (table.ContainsKey("locked") && (bool)table["locked"]) declineButton.SetActive(false);
-        if (table.ContainsKey("awayed") && (bool)table["awayed"]) acceptButton.SetActive(false);
-        //if(table.ContainsKey("redirect") && (bool)table["redirect"]) declineButton.SetActive(false);//不可以不接收
+        if (table.ContainsKey("redirected") && (bool)table["redirected"]) declineButton.SetActive(false);//redirect > lock > away
+        else if (table.ContainsKey("locked") && (bool)table["locked"]) declineButton.SetActive(false);
+        else if (table.ContainsKey("awayed") && (bool)table["awayed"]) acceptButton.SetActive(false);
     }
 
     private void resetUserDebuffUI()

@@ -644,7 +644,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   content: {fileID: 1830397734}
-  _cardListing: {fileID: 872902758230849542, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
+  _cardListing: {fileID: 872902758230849542, guid: f47006f9835a21a4e90d75755f450c06, type: 3}
 --- !u!1 &33285007
 GameObject:
   m_ObjectHideFlags: 0
