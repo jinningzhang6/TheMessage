@@ -59,9 +59,11 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
             int spellType = (int)data[3];
             spellCardsListing.AddSpellCard((int)data[1]);
             if (spellType == 0) SpellLock((int)data[0], (int)data[2]);
-            if (spellType == 1) SpellAway((int)data[0], (int)data[2]);
-            if (spellType == 2) SpellHelp((int)data[2]);
-            if (spellType == 3) SpellRedirect((int)data[0],(int)data[2]);
+            else if (spellType == 1) SpellAway((int)data[0], (int)data[2]);
+            else if (spellType == 2) SpellHelp((int)data[2]);
+            else if (spellType == 3) SpellRedirect((int)data[0], (int)data[2]);
+            else if (spellType == 4) SpellGamble((int)data[0], (int)data[2]);
+            else if (spellType == 5) SpellIntercept((int)data[2]);
         }
         else if (eventCode == SendCardEventCode)
         {
@@ -109,6 +111,28 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
             Debug.Log("cannot cast in SpellRedirect");
         }
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了转移";
+    }
+
+    private void SpellGamble(int castPlayer, int toPlayer)
+    {
+        Player _player = (Player)playerSequences[$"{toPlayer}"];
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // -1 indicating assign random message for player
+            inGame.assignMessageForPlayer(_player, -1);
+        }
+        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} gamble with {_player.NickName}";
+    }
+
+    private void SpellIntercept(int castPlayer)
+    {
+        Player _player = (Player)playerSequences[$"{castPlayer}"];
+        if (PhotonNetwork.IsMasterClient)
+        {   
+            // send on going passing message card to cast player
+            inGame.raiseCertainEvent(SendCardEventCode, new object[] { castPlayer, inGame.getCurrentCardId() });
+        }
+        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} used intercept";
     }
 
     private void setPlayerDebuff(Player player,string debuffName,bool debuff,string keyword)

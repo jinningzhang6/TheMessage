@@ -11,7 +11,7 @@ using System.Linq;
 public class ServerCommand : MonoBehaviourPunCallbacks
 {
     private string[] playerMessages = new string[] { "playerBlueMessage", "playerRedMessage", "playerBlackMessage" };
-    protected string[] spellCardsName = new string[] { "锁定", "调虎离山", "增援" };
+    protected string[] spellCardsName = new string[] { "锁定", "调虎离山", "增援", "redirect", "gamble", "intercept" };
 
     private List<int> serverDeck;
     public List<Card> Deck;
@@ -97,6 +97,41 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         player.SetCustomProperties(table);//table(key,value) "playerStartDeck" = startDeck //(id7,id8,id10,id3);
     }
 
+    public void assignMessageForPlayer(Player player, int cardId)
+    {
+        // if cardId == -1, assign random message from systemdeck
+        if (cardId == -1)
+        {
+            Debug.Log($"SystemDeck count: {serverDeck.Count}");
+            if (serverDeck.Count == 0) serverDeck = new SystemDeck().getDeck();
+            cardId = serverDeck.LastOrDefault();
+            Debug.Log($"Getting cardId: { cardId }");
+        }
+        // get message color combination
+        int blueColor = Deck[cardId].blue;
+        int redColor = Deck[cardId].red;
+        int blackColor = Deck[cardId].black;
+
+        Debug.Log($"Assigned {blueColor}, {redColor}, {blackColor}");
+        // assign message according to color
+        if (blueColor == 1) assignMessage(player, 0);
+        if (redColor == 1) assignMessage(player, 1);
+        if (blackColor == 1) assignMessage(player, 2);
+    }
+
+    // Overload function to assignMessage for specific player
+    private void assignMessage(Player player, int i)
+    {
+        Hashtable table = getPlayerHashTable(player);
+        if (!table.ContainsKey(playerMessages[i])) table.Add(playerMessages[i], 1);
+        else
+        {
+            int existingM = (int)table[playerMessages[i]];
+            table[playerMessages[i]] = existingM + 1;
+        }
+        player.SetCustomProperties(table);
+    }
+
     protected void assignMessage(int i)
     {
         Hashtable table = getPlayerHashTable(PhotonNetwork.LocalPlayer);
@@ -110,13 +145,24 @@ public class ServerCommand : MonoBehaviourPunCallbacks
     }
 
     // 相关信息 Eugene！
-    protected bool isPlayerCastAllowed(int type, int subTurn)//必须在自己的回合 使用的卡片
+    protected bool isPlayerCastAllowed(int type, int subTurn, int currentCardId)//必须在自己的回合 使用的卡片
     {
-        if(type==0 || type == 2)//锁定 增援
+        if(type==0 || type == 2 || type == 4)//锁定 增援
         {
             if (!((Player)playerSequences[$"{turnCount}"]).IsLocal) return false;
         }
         if(type==3 && subTurn!= (int)playerSequencesByName[$"{PhotonNetwork.LocalPlayer.NickName}"]) return false;
+        if (type == 5)
+        {
+            Debug.Log(currentCardId);
+            // return false if there is no sending message card
+            if (currentCardId == -1)
+            {
+                return false;
+            }
+            // return true if this is other player's turn, false if this is casting player's turn
+            return !(((Player)playerSequences[$"{turnCount}"]).IsLocal);
+        }
         return true;
     }
 
