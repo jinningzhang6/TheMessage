@@ -29,6 +29,7 @@ public class CardAssets
         spellCards[i++] = Resources.Load<Sprite>("redirect_red");//12
         spellCards[i++] = Resources.Load<Sprite>("redirect_black");
         spellCards[i++] = Resources.Load<Sprite>("redirect_blue");
+        spellCards[i++] = Resources.Load<Sprite>("gamble_black");//15
     }
 
     public Sprite[] getCardBackground()

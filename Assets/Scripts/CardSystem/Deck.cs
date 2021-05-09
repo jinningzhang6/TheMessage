@@ -52,6 +52,8 @@ public class Deck
         deck.Add(new Card(id++, 0, 0, 1, spellCards[13], 3));
         deck.Add(new Card(id++, 1, 0, 0, spellCards[14], 3));
         deck.Add(new Card(id++, 1, 0, 0, spellCards[14], 3));
+        deck.Add(new Card(id++, 0, 0, 1, spellCards[15], 4));//gamble_black 2
+        deck.Add(new Card(id++, 0, 0, 1, spellCards[15], 4));
     }
 
     public List<Card> getDeck()
