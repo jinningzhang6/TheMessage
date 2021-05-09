@@ -201,13 +201,13 @@ public class InGame : ServerCommand, IOnEventCallback
     {
         if (CardListing.selectedCard == null) return;
         int type = CardListing.selectedCard.cardType;// lock? redirect?
-        if (!isPlayerCastAllowed(type,subTurnCount))// 不允许操作 -》在别人turn里面 使用了 锁定/增援
+        if (!isPlayerCastAllowed(type, subTurnCount, currentCardId))// 不允许操作 -》在别人turn里面 使用了 锁定/增援
         {
             reminderText.text = $"You can not use {spellCardsName[CardListing.selectedCard.cardType]} now";
             reminderText.gameObject.SetActive(true);
             return;
         }
-        if (type == 2)//直接触发条件 -> 增援 可直接触发 不需要点击任何头像
+        if (type == 2 || type == 5)//直接触发条件 -> 增援 可直接触发 不需要点击任何头像
         {
             useSpellCard(CardListing.selectedCard.cardId, CardListing.selectedCard.cardType, PhotonNetwork.LocalPlayer.NickName);
             return;
