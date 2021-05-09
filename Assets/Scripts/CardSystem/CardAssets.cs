@@ -9,7 +9,7 @@ public class CardAssets
 
     public CardAssets()
     {
-        spellCards = new Sprite[17];
+        spellCards = new Sprite[21];
         backgroundCards = new Sprite[2];
         backgroundCards[0] = Resources.Load<Sprite>("normal_msg");
         backgroundCards[1] = Resources.Load<Sprite>("direct_msg");
@@ -30,6 +30,11 @@ public class CardAssets
         spellCards[i++] = Resources.Load<Sprite>("redirect_black");
         spellCards[i++] = Resources.Load<Sprite>("redirect_blue");
         spellCards[i++] = Resources.Load<Sprite>("gamble_black");//15
+        spellCards[i++] = Resources.Load<Sprite>("intercept_red");//16
+        spellCards[i++] = Resources.Load<Sprite>("intercept_red_black");
+        spellCards[i++] = Resources.Load<Sprite>("intercept_black");
+        spellCards[i++] = Resources.Load<Sprite>("intercept_blue");
+        spellCards[i++] = Resources.Load<Sprite>("intercept_blue_black");
     }
 
     public Sprite[] getCardBackground()

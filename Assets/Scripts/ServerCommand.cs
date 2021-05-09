@@ -11,7 +11,7 @@ using System.Linq;
 public class ServerCommand : MonoBehaviourPunCallbacks
 {
     private string[] playerMessages = new string[] { "playerBlueMessage", "playerRedMessage", "playerBlackMessage" };
-    protected string[] spellCardsName = new string[] { "锁定", "调虎离山", "增援" };
+    protected string[] spellCardsName = new string[] { "锁定", "调虎离山", "增援", "redirect", "gamble", "intercept" };
 
     private List<int> serverDeck;
     public List<Card> Deck;
@@ -145,13 +145,24 @@ public class ServerCommand : MonoBehaviourPunCallbacks
     }
 
     // 相关信息 Eugene！
-    protected bool isPlayerCastAllowed(int type, int subTurn)//必须在自己的回合 使用的卡片
+    protected bool isPlayerCastAllowed(int type, int subTurn, int currentCardId)//必须在自己的回合 使用的卡片
     {
         if(type==0 || type == 2 || type == 4)//锁定 增援
         {
             if (!((Player)playerSequences[$"{turnCount}"]).IsLocal) return false;
         }
         if(type==3 && subTurn!= (int)playerSequencesByName[$"{PhotonNetwork.LocalPlayer.NickName}"]) return false;
+        if (type == 5)
+        {
+            Debug.Log(currentCardId);
+            // return false if there is no sending message card
+            if (currentCardId == -1)
+            {
+                return false;
+            }
+            // return true if this is other player's turn, false if this is casting player's turn
+            return !(((Player)playerSequences[$"{turnCount}"]).IsLocal);
+        }
         return true;
     }
 
