@@ -8,8 +8,6 @@ using UnityEngine.UI;
 public class CardItem : MonoBehaviour
 {
     [SerializeField]
-    private Text id;
-    [SerializeField]
     private Image background;
 
     public int cardId { get; private set; }
@@ -17,7 +15,6 @@ public class CardItem : MonoBehaviour
 
     public void SetCardInfo(int id, Sprite image, int type)
     {
-        this.id.text = $"{id}";
         background.sprite = image;
         cardId = id;
         cardType = type;
@@ -34,6 +31,29 @@ public class CardItem : MonoBehaviour
             if (CardListing.selectedCard.cardId == this.cardId) CardListing.selectedCard = null;
             else MoveUpPosition();
         }
+    }
+
+    public void OnBurnSelected()
+    {
+        if (BurnCardListing.selectedBurnCard == null) MoveUpPosition();
+        else
+        {
+            Vector2 position = BurnCardListing.selectedBurnCard.transform.position;
+            position.y -= 100;
+            BurnCardListing.selectedBurnCard.transform.position = position;
+            if (BurnCardListing.selectedBurnCard.cardId == this.cardId) BurnCardListing.selectedBurnCard = null;
+            else MoveUpPosition();
+        }
+    }
+
+    public void onHover()
+    {
+        
+    }
+
+    public void onLeave()
+    {
+
     }
 
     private void MoveUpPosition()

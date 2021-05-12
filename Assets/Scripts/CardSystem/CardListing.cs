@@ -36,7 +36,7 @@ public class CardListing : MonoBehaviourPunCallbacks
         {
             int index = myDeck.FindIndex(x => x.cardId == id);
             if (index != -1) continue;
-            Debug.Log($"[CardToHand OnPlayerPropertiesUpdate]: My Card id: {id}");
+            
             CardItem newCard = Instantiate(_cardListing,content);//object
             
             if (newCard != null)
@@ -60,6 +60,23 @@ public class CardListing : MonoBehaviourPunCallbacks
             myDeck.RemoveAt(index);
         }
 
+        updateHandCards();
+    }
+
+    public void removeSelectedCardFromHand(int cardId)
+    {
+        int index = myDeck.FindIndex(x => x.cardId == cardId);
+        if (index != -1)
+        {
+            Destroy(myDeck[index].gameObject);
+            myDeck.RemoveAt(index);
+        }
+
+        updateHandCards();
+    }
+
+    private void updateHandCards()
+    {
         Hashtable table = PhotonNetwork.LocalPlayer.CustomProperties;//
         if (table == null) table = new Hashtable();
 
@@ -71,6 +88,20 @@ public class CardListing : MonoBehaviourPunCallbacks
 
         if (table.ContainsKey("playerStartDeck")) table["playerStartDeck"] = newDeck;
         else table.Add("playerStartDeck", newDeck);
+        PhotonNetwork.LocalPlayer.SetCustomProperties(table);
+    }
+
+    public void removeAllCards()//È¨ºâ
+    {
+        foreach (Transform child in content.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        myDeck.Clear();
+        Hashtable table = PhotonNetwork.LocalPlayer.CustomProperties;//
+        if (table == null) table = new Hashtable();
+        if (table.ContainsKey("playerStartDeck")) table["playerStartDeck"] = new object[] { };
+        else table.Add("playerStartDeck", new object[] { });
         PhotonNetwork.LocalPlayer.SetCustomProperties(table);
     }
 

@@ -10,32 +10,31 @@ public class SpellCardsListing : MonoBehaviour
     private CardItem _cardListing;
 
     private Deck deck;
-    private List<CardItem> listing;
+    private List<GameObject> listing;
     private List<Card> normalDeck;
 
     // Start is called before the first frame update
     void Start()
     {
         deck = new Deck();
-        listing = new List<CardItem>();
+        listing = new List<GameObject>();
         normalDeck = deck.getDeck();
     }
 
     public void AddSpellCard(int id)
     {
         CardItem newCard = Instantiate(_cardListing, content);
-        if (newCard == null) return;
         newCard.SetCardInfo(normalDeck[id].id, normalDeck[id].image, normalDeck[id].type);
-        listing.Add(newCard);
+        listing.Add(newCard.gameObject);
     }
 
     public void ResetSpellCardListing()
     {
-        for(int i = 0; i < listing.Count; i++)
+        foreach (Transform child in content.transform)
         {
-            Destroy(listing[i].gameObject);
-            listing.RemoveAt(i);
+            Destroy(child.gameObject);
         }
+        listing.Clear();
     }
 
 }

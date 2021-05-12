@@ -79,7 +79,7 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         Player _player = (Player)playerSequences[$"{toPlayer}"];
         if (currentTurnPlayer == _player) declineButton.SetActive(false);
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了锁定";
-        if (PhotonNetwork.IsMasterClient)  setPlayerDebuff(_player, "locked", true, "锁");
+        setPlayerDebuff(_player, "locked", true, "锁");
     }
 
     private void SpellAway(int castPlayer, int toPlayer)
@@ -87,64 +87,51 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
         Player _player = (Player)playerSequences[$"{toPlayer}"];
         if (currentTurnPlayer == _player) acceptButton.SetActive(false);
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了调虎离山";
-        if (PhotonNetwork.IsMasterClient) setPlayerDebuff(_player, "awayed", true, "调");
+        setPlayerDebuff(_player, "awayed", true, "调");
     }
 
     private void SpellHelp(int castPlayer)
     {
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 使用了增援";
-        if (PhotonNetwork.IsMasterClient)
-        {
-            int numBlack = inGame.getPlayerBlackMessage();
-            inGame.DrawCardsForPlayer((Player)playerSequences[$"{castPlayer}"], numBlack + 1);
-        }
     }
 
     private void SpellRedirect(int castPlayer, int toPlayer)
     {
-        Debug.Log("doing in SpellRedirect");
         Player _player = (Player)playerSequences[$"{toPlayer}"];
-        if (PhotonNetwork.IsMasterClient)
-        {
-            setPlayerDebuff((Player)playerSequences[$"{toPlayer}"], "redirected", true, "转");
-            inGame.raiseCertainEvent(SendCardEventCode, new object[] { toPlayer, inGame.getCurrentCardId() });
-            Debug.Log("cannot cast in SpellRedirect");
-        }
+        setPlayerDebuff((Player)playerSequences[$"{toPlayer}"], "redirected", true, "转");
+        if (PhotonNetwork.IsMasterClient) inGame.raiseCertainEvent(SendCardEventCode, new object[] { toPlayer, inGame.getCurrentCardId() });
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了转移";
     }
 
     private void SpellGamble(int castPlayer, int toPlayer)
     {
         Player _player = (Player)playerSequences[$"{toPlayer}"];
-        if (PhotonNetwork.IsMasterClient)
-        {
-            // -1 indicating assign random message for player
-            inGame.assignMessageForPlayer(_player, -1);
-        }
-        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} gamble with {_player.NickName}";
+        if (PhotonNetwork.IsMasterClient) inGame.assignMessageForPlayer(_player, -1);// -1 indicating assign random message for player
+        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了博弈";
     }
 
     private void SpellIntercept(int castPlayer)
     {
-        Player _player = (Player)playerSequences[$"{castPlayer}"];
-        if (PhotonNetwork.IsMasterClient)
-        {   
-            // send on going passing message card to cast player
-            inGame.raiseCertainEvent(SendCardEventCode, new object[] { castPlayer, inGame.getCurrentCardId() });
-        }
-        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} used intercept";
+        // send on going passing message card to cast player
+        if (PhotonNetwork.IsMasterClient) inGame.raiseCertainEvent(SendCardEventCode, new object[] { castPlayer, inGame.getCurrentCardId() });
+        gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 使用了截获";
     }
 
     private void setPlayerDebuff(Player player,string debuffName,bool debuff,string keyword)
     {
+        setPlayerDebuffUI(player, debuff, keyword);
+        if (!PhotonNetwork.IsMasterClient) return;
         Hashtable table = player.CustomProperties;
         if (table == null) table = new Hashtable();
         if (!table.ContainsKey(debuffName)) table.Add(debuffName, debuff);
         else table[debuffName] = debuff;
-
-        debuff_indicatorUI[(int)playerPositions[player]].SetActive(debuff);//
-        foreach(Text text in debuff_indicatorUI[(int)playerPositions[player]].GetComponentsInChildren<Text>()) text.text = keyword;
         player.SetCustomProperties(table);
+    }
+
+    private void setPlayerDebuffUI(Player player, bool debuff, string keyword)
+    {
+        debuff_indicatorUI[(int)playerPositions[player]].SetActive(debuff);//
+        foreach (Text text in debuff_indicatorUI[(int)playerPositions[player]].GetComponentsInChildren<Text>()) text.text = keyword;
     }
 
     private void checkIfUserDebuff(Player player)

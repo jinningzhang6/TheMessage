@@ -10,7 +10,6 @@ using System.Linq;
 
 public class ServerCommand : MonoBehaviourPunCallbacks
 {
-    private string[] playerMessages = new string[] { "playerBlueMessage", "playerRedMessage", "playerBlackMessage" };
     protected string[] spellCardsName = new string[] { "锁定", "调虎离山", "增援", "redirect", "gamble", "intercept" };
 
     private List<int> serverDeck;
@@ -23,6 +22,7 @@ public class ServerCommand : MonoBehaviourPunCallbacks
     public int turnCount;
 
     private const int TurnStartEventCode = 1;
+    private const int CardsLeftEventCode = 5;
 
     protected virtual void Awake()
     {
@@ -95,6 +95,8 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         if (table.ContainsKey("playerStartDeck")) table["playerStartDeck"] = startDeck;
         else table.Add("playerStartDeck", startDeck);
         player.SetCustomProperties(table);//table(key,value) "playerStartDeck" = startDeck //(id7,id8,id10,id3);
+        object[] content = new object[] { serverDeck.Count};
+        raiseCertainEvent(CardsLeftEventCode, content);
     }
 
     public void assignMessageForPlayer(Player player, int cardId)
@@ -102,49 +104,57 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         // if cardId == -1, assign random message from systemdeck
         if (cardId == -1)
         {
-            Debug.Log($"SystemDeck count: {serverDeck.Count}");
             if (serverDeck.Count == 0) serverDeck = new SystemDeck().getDeck();
             cardId = serverDeck.LastOrDefault();
-            Debug.Log($"Getting cardId: { cardId }");
         }
-        // get message color combination
-        int blueColor = Deck[cardId].blue;
-        int redColor = Deck[cardId].red;
-        int blackColor = Deck[cardId].black;
-
-        Debug.Log($"Assigned {blueColor}, {redColor}, {blackColor}");
-        // assign message according to color
-        if (blueColor == 1) assignMessage(player, 0);
-        if (redColor == 1) assignMessage(player, 1);
-        if (blackColor == 1) assignMessage(player, 2);
+        
+        assignMessage(player, cardId);
     }
 
-    // Overload function to assignMessage for specific player
-    private void assignMessage(Player player, int i)
+    //assignMessage for specific player
+    public void assignMessage(Player player, int cardId)
     {
         Hashtable table = getPlayerHashTable(player);
-        if (!table.ContainsKey(playerMessages[i])) table.Add(playerMessages[i], 1);
+        if (!table.ContainsKey("playerBlueMessage")) table.Add("playerBlueMessage", 0);
+        if (!table.ContainsKey("playerRedMessage")) table.Add("playerRedMessage", 0);
+        if (!table.ContainsKey("playerBlackMessage")) table.Add("playerBlackMessage", 0);
+        assignMessage(player, table, cardId);
+    }
+
+    //assignCard for specific player
+    private void assignMessage(Player player, Hashtable table, int newcardId)
+    {
+        object[] msgStack;
+        int blueColor = 0, redColor = 0, blackColor = 0;
+        if (!table.ContainsKey("msgStack"))
+        {
+            msgStack = new object[] { newcardId };
+            table.Add("msgStack", msgStack);
+        }
         else
         {
-            int existingM = (int)table[playerMessages[i]];
-            table[playerMessages[i]] = existingM + 1;
+            object[] oldStack = (object[])table["msgStack"];
+            msgStack = new object[oldStack.Length + 1];
+            for (int i = 0; i < oldStack.Length; i++)
+            {
+                int cardId = (int)oldStack[i];
+                blueColor += Deck[cardId].blue;//1, 0
+                redColor += Deck[cardId].red;
+                blackColor += Deck[cardId].black;
+                msgStack[i] = oldStack[i];
+            }
+            msgStack[oldStack.Length] = newcardId;
+            table["msgStack"] = msgStack;
         }
+        blueColor += Deck[newcardId].blue;
+        redColor += Deck[newcardId].red;
+        blackColor += Deck[newcardId].black;
+        table["playerBlueMessage"] = blueColor;
+        table["playerRedMessage"] = redColor;
+        table["playerBlackMessage"] = blackColor;
         player.SetCustomProperties(table);
     }
 
-    protected void assignMessage(int i)
-    {
-        Hashtable table = getPlayerHashTable(PhotonNetwork.LocalPlayer);
-        if (!table.ContainsKey(playerMessages[i])) table.Add(playerMessages[i], 1);
-        else
-        {
-            int existingM = (int)table[playerMessages[i]];
-            table[playerMessages[i]] = existingM + 1;
-        }
-        PhotonNetwork.LocalPlayer.SetCustomProperties(table);
-    }
-
-    // 相关信息 Eugene！
     protected bool isPlayerCastAllowed(int type, int subTurn, int currentCardId)//必须在自己的回合 使用的卡片
     {
         if(type==0 || type == 2 || type == 4)//锁定 增援
@@ -154,12 +164,8 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         if(type==3 && subTurn!= (int)playerSequencesByName[$"{PhotonNetwork.LocalPlayer.NickName}"]) return false;
         if (type == 5)
         {
-            Debug.Log(currentCardId);
             // return false if there is no sending message card
-            if (currentCardId == -1)
-            {
-                return false;
-            }
+            if (currentCardId == -1) return false;
             // return true if this is other player's turn, false if this is casting player's turn
             return !(((Player)playerSequences[$"{turnCount}"]).IsLocal);
         }
@@ -169,11 +175,7 @@ public class ServerCommand : MonoBehaviourPunCallbacks
     protected bool isCastedPlayerAllowed(int type, int player,int subTurn)//点击用户图片后 系统确认是否可以触发
     {
         if (type == 1 && player == turnCount) return false;//调虎离山不能给发送者
-        if (type == 3 && player == subTurn)
-        {
-            Debug.Log($"cannot cast in [isCastedPlayerAllowed] type: {type} player int : {player}, subTurn: {subTurn}");
-            return false;//必须到此人面前 才能使用[转移]
-        }
+        if (type == 3 && player == subTurn) return false;//必须到此人面前 才能使用[转移]
 
         return checkPriority(type, (Player)playerSequences[$"{player}"]);
     }
@@ -190,12 +192,13 @@ public class ServerCommand : MonoBehaviourPunCallbacks
         }
     }
 
+    /*
     public int getPlayerBlackMessage()
     {
         Hashtable table = getPlayerHashTable(PhotonNetwork.LocalPlayer);
         int numBlacks = table.ContainsKey("playerBlackMessage") ? (int)table["playerBlackMessage"] : 0;
         return numBlacks;
-    }
+    }*/
 
     protected Hashtable getPlayerHashTable(Player player)
     {

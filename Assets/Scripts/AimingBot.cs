@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class AimingBot : MonoBehaviour
@@ -9,6 +10,7 @@ public class AimingBot : MonoBehaviour
     public GameObject game_object;
     public GameObject aimingIndicator;
     public Button charIcon;
+    public GameObject directMsgDropZone;
 
     private string playerName;
     private float rotZ;
@@ -20,6 +22,17 @@ public class AimingBot : MonoBehaviour
         inGame = game_object.GetComponent<InGame>();
         if(aimingIndicator!=null) aimingIndicator.SetActive(false);
         playerName = GetComponentsInChildren<Text>()[5].text;
+
+        EventTrigger trigger = directMsgDropZone.GetComponent<EventTrigger>();
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        entry.eventID = EventTriggerType.Drop;
+        entry.callback.AddListener((data) => { OnDropMy((PointerEventData)data); });
+        trigger.triggers.Add(entry);
+    }
+
+    private void OnDropMy(PointerEventData eventData)
+    {
+        Debug.Log($"being droped on player: {playerName}");
     }
 
     // Update is called once per frame
@@ -45,5 +58,10 @@ public class AimingBot : MonoBehaviour
         if (!inGame.usingSpell || CardListing.selectedCard == null) return;
         inGame.useSpellCard(CardListing.selectedCard.cardId, CardListing.selectedCard.cardType,playerName);// playername-> target player
         inGame.cancelSpell();
+    }
+
+    public void clickOnMsgButton()
+    {
+        inGame.showBurnCardWindow(playerName);
     }
 }

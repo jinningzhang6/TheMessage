@@ -8,6 +8,7 @@ public class DraggerSystem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     private Transform parentToReturnTo = null;
     //private CardItem cardItem = null;
     private CanvasGroup canvas;
+
     public void OnBeginDrag(PointerEventData eventData)
     {
         Debug.Log("Begin Dragging");
@@ -22,6 +23,7 @@ public class DraggerSystem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public void OnDrag(PointerEventData eventData)
     {
         transform.position = eventData.position;
+        InGame.showAllReceivingCardSection();
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -31,5 +33,6 @@ public class DraggerSystem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         canvas.blocksRaycasts = true;
         transform.SetParent(parentToReturnTo);
         CardListing.selectedCard = null;
+        InGame.hideAllReceivingCardSection();
     }
 }
