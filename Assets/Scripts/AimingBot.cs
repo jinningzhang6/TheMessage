@@ -9,8 +9,8 @@ public class AimingBot : MonoBehaviour
     private InGame inGame;
     public GameObject game_object;
     public GameObject aimingIndicator;
-    public Button charIcon;
-    public GameObject directMsgDropZone;
+    private Button charIcon;
+    private Button directMsgDropZone;
 
     private string playerName;
     private float rotZ;
@@ -18,21 +18,41 @@ public class AimingBot : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        charIcon.onClick.AddListener(() => clickOnCharIcon());
         inGame = game_object.GetComponent<InGame>();
         if(aimingIndicator!=null) aimingIndicator.SetActive(false);
         playerName = GetComponentsInChildren<Text>()[5].text;
-
-        EventTrigger trigger = directMsgDropZone.GetComponent<EventTrigger>();
-        EventTrigger.Entry entry = new EventTrigger.Entry();
-        entry.eventID = EventTriggerType.Drop;
-        entry.callback.AddListener((data) => { OnDropMy((PointerEventData)data); });
-        trigger.triggers.Add(entry);
+        charIcon = GetComponentsInChildren<Button>()[0];
+        directMsgDropZone = GetComponentsInChildren<Button>()[8];
+        charIcon.onClick.AddListener(() => clickOnCharIcon());
+        if (charIcon == null) Debug.Log($" not good in: {playerName}");
+        if (directMsgDropZone == null) Debug.Log($"error at {playerName}");
+        OnPointerOut(null);
+        directMsgDropZone.gameObject.SetActive(false);
+        assignEventTriggers();
     }
 
-    private void OnDropMy(PointerEventData eventData)
+    public void OnDropMy(PointerEventData eventData)
     {
-        Debug.Log($"being droped on player: {playerName}");
+        InGame.hideAllReceivingCardSection();
+        int cardId = -1;
+        if (eventData.pointerDrag.TryGetComponent(out CardItem item)) cardId = eventData.selectedObject.GetComponent<CardItem>().cardId;
+        else cardId = inGame.currentCardId;
+        CardListing.selectedCard = null;
+        if (cardId == -1) return;
+        inGame.raiseCertainEvent(2, new object[] { (int)inGame.playerSequencesByName[playerName], cardId });// sendcardEvent
+        inGame.cardListing.removeSelectedCardFromHand(cardId);
+    }
+
+    private void OnPointerIn(PointerEventData eventData)
+    {
+        CanvasGroup canvas = directMsgDropZone.GetComponentsInChildren<CanvasGroup>()[0];
+        canvas.alpha = 1f;
+    }
+
+    private void OnPointerOut(PointerEventData eventData)
+    {
+        CanvasGroup canvas = directMsgDropZone.GetComponentsInChildren<CanvasGroup>()[0];
+        canvas.alpha = 0.6f;
     }
 
     // Update is called once per frame
@@ -51,6 +71,23 @@ public class AimingBot : MonoBehaviour
                 aimingIndicator.SetActive(false);
             }
         }
+    }
+
+    private void assignEventTriggers()
+    {
+        EventTrigger trigger = directMsgDropZone.GetComponent<EventTrigger>();
+        EventTrigger.Entry drop = new EventTrigger.Entry();
+        EventTrigger.Entry entry = new EventTrigger.Entry();
+        EventTrigger.Entry exit = new EventTrigger.Entry();
+        entry.eventID = EventTriggerType.PointerEnter;
+        entry.callback.AddListener((data) => { OnPointerIn((PointerEventData)data); });
+        exit.eventID = EventTriggerType.PointerExit;
+        exit.callback.AddListener((data) => { OnPointerOut((PointerEventData)data); });
+        drop.eventID = EventTriggerType.Drop;
+        drop.callback.AddListener((data) => { OnDropMy((PointerEventData)data); });
+        trigger.triggers.Add(drop);
+        trigger.triggers.Add(entry);
+        trigger.triggers.Add(exit);
     }
 
     void clickOnCharIcon()

@@ -20,5 +20,6 @@ public class ItemDropped : MonoBehaviourPunCallbacks, IDropHandler
         int playerSequel = (int)inGame.playerSequencesByName[texts[5].text];
         inGame.cardListing.removeSelectedCardFromHand(cardItem.cardId);//update no this card
         inGame.assignMessage((Player)inGame.playerSequences[$"{playerSequel}"], cardItem.cardId);//no card
+        inGame.raiseCertainEvent(6, new object[] { playerSequel, cardItem.cardId });
     }
 }

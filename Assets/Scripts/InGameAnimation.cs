@@ -21,7 +21,6 @@ public class InGameAnimation : MonoBehaviourPunCallbacks
         inGame = InGameObjects.GetComponent<InGame>();
         startingDeckPos = cardDeck.transform.position;
         passingCardBck = new CardAssets().getCardBackground();
-        passingCardLive.SetActive(false);
         assigningCardLive.SetActive(false);
         passingCardLive.GetComponent<Image>().sprite = passingCardBck[0];
     }
@@ -29,13 +28,12 @@ public class InGameAnimation : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        if (inGame.shouldAnimatePassingCard)
+        if (inGame.shouldAnimatePassingCard && !DraggerSystem.onDraggingCard)
         {
             passingCardLive.SetActive(true);
             passingCardLive.transform.position = Vector3.Lerp(passingCardLive.transform.position, inGame.passingCardPosition, 5 * Time.deltaTime);
         }
-        else
-        {
+        else if(!inGame.shouldAnimatePassingCard && !DraggerSystem.onDraggingCard){
             passingCardLive.SetActive(false);
         }
         if (inGame.shouldAnimateAssigningCard)

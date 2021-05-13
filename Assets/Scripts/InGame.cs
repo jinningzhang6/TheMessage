@@ -13,12 +13,13 @@ public class InGame : ServerCommand, IOnEventCallback
     public GameObject[] passingCardUIs, newPassingCardUIs;
     public GameObject[] playerReceiveCardUIs;
     public static GameObject[] newPlayerReceiveCardUIs;
-    public GameObject turnPrompt, sendMessageButton, endTurnButton, incomingManipulation, useSpellButton, cancelSpellButton, MainSceneObjects, cardDeck;
+    public GameObject turnPrompt, endTurnButton, incomingManipulation, useSpellButton, cancelSpellButton, MainSceneObjects, cardDeck;
     public Text playerTurnUI, cardsLeftUI, reminderText;
 
     public GameObject openCard, assignCardObject, burnCardWindow;
     //private InGameCommand inGameCommand;
     public CardListing cardListing;
+    private InGameCommand inGameCommand;
     private BurnCardListing burnCardListing;
     public Player currentTurnPlayer;
     public Vector3 passingCardPosition, assigningCardPosition, assignCardStartingPosition;
@@ -26,7 +27,7 @@ public class InGame : ServerCommand, IOnEventCallback
     public bool shouldAnimatePassingCard,shouldAnimateAssigningCard;
     public bool usingSpell;
     private int subTurnCount;
-    private int currentCardId;
+    public int currentCardId { private set; get; }
 
     private const int DrawCardEventCode = 0;
     private const int TurnStartEventCode = 1;
@@ -34,6 +35,8 @@ public class InGame : ServerCommand, IOnEventCallback
     private const int SpellCardEventCode = 3;
     private const int ToEndTurnEventCode = 4;
     private const int CardsLeftEventCode = 5;
+    private const int SuccessReceiveEventCode = 6;
+    //private const int DropCardEventCode = 7;
 
     protected override void Awake()
     {
@@ -45,11 +48,10 @@ public class InGame : ServerCommand, IOnEventCallback
         shouldAnimatePassingCard = false;
         shouldAnimateAssigningCard = false;
         incomingManipulation.SetActive(false);
-        sendMessageButton.SetActive(false);
         endTurnButton.SetActive(false);
         cancelSpellButton.SetActive(false);
         reminderText.gameObject.SetActive(false);
-        //inGameCommand = MainSceneObjects.GetComponent<InGameCommand>();
+        inGameCommand = MainSceneObjects.GetComponent<InGameCommand>();
         cardListing = MainSceneObjects.GetComponent<CardListing>();
         burnCardListing = MainSceneObjects.GetComponent<BurnCardListing>();
         assignCardObject.GetComponent<Image>().sprite = new CardAssets().getCardBackground()[1];
@@ -99,7 +101,6 @@ public class InGame : ServerCommand, IOnEventCallback
                 j++;
             }
         }
-        hideAllReceivingCardSection();
     }
 
     public override void OnPlayerPropertiesUpdate(Player targetPlayer, Hashtable changedProps)
@@ -123,13 +124,6 @@ public class InGame : ServerCommand, IOnEventCallback
         {
             int msgs = (int)changedProps["playerBlackMessage"];
             newPlayerUIS[(int)playerPositions[targetPlayer]].GetComponentsInChildren<Text>()[3].text = $"{msgs}";
-        }
-        if (changedProps.ContainsKey("msgStack"))
-        {
-            object[] playerMsgs = (object[])changedProps["msgStack"];
-            int newcardId = (int)playerMsgs[playerMsgs.Length - 1];
-            openCard.SetActive(true);
-            openCard.GetComponentsInChildren<Image>()[1].sprite = Deck[newcardId].image;
         }
     }
 
@@ -157,10 +151,9 @@ public class InGame : ServerCommand, IOnEventCallback
             currentTurnPlayer = (Player)playerSequences[$"{turnCount}"];// 0 -> nick, 1 -> bill, 2 -> Eugene
             playerTurnUI.text = currentTurnPlayer.NickName;
             turnPrompt.GetComponent<Text>().text = $"玩家[{currentTurnPlayer.NickName}]的回合";
-            if (currentTurnPlayer.IsLocal) sendMessageButton.SetActive(true);//show / hide
-            else sendMessageButton.SetActive(false);
             passingCardPosition = newPassingCardUIs[(int)playerPositions[currentTurnPlayer]].transform.position;
             shouldAnimatePassingCard = false;
+            if(currentTurnPlayer.IsLocal) endTurnButton.SetActive(true);
         }
         else if (eventCode == SendCardEventCode)
         {
@@ -176,9 +169,7 @@ public class InGame : ServerCommand, IOnEventCallback
         }
         else if(eventCode == ToEndTurnEventCode)
         {
-            Player playerToStart = (Player)playerSequences[$"{turnCount}"];
             turnPrompt.GetComponent<Text>().text = $"玩家[{((Player)playerSequences[$"{subTurnCount}"]).NickName}]收到了情报";
-            if (playerToStart!=null && playerToStart.IsLocal) endTurnButton.SetActive(true);
             currentCardId = -1;
             shouldAnimatePassingCard = false;
         }
@@ -187,6 +178,15 @@ public class InGame : ServerCommand, IOnEventCallback
             object[] data = (object[])photonEvent.CustomData;
             int cardsLeft = (int)data[0];
             cardsLeftUI.text = $"{cardsLeft}";
+        }else if(eventCode == SuccessReceiveEventCode)
+        {
+            object[] data = (object[])photonEvent.CustomData;
+            int playerSequel = (int)data[0];
+            int receivedCard = (int)data[1];
+            Player player = (Player)playerSequences[$"{playerSequel}"];
+            inGameCommand.gameRealTimeInfo.text = $"玩家[{player.NickName}]接收了情报!";
+            openCard.SetActive(true);
+            openCard.GetComponentsInChildren<Image>()[1].sprite = Deck[receivedCard].image;
         }
     }
 
@@ -198,7 +198,6 @@ public class InGame : ServerCommand, IOnEventCallback
         raiseCertainEvent(SendCardEventCode, new object[] { ++subTurnCount, currentCardId });
         cardListing.removeSelectedCardFromHand();
         incomingManipulation.SetActive(false);
-        sendMessageButton.SetActive(false);
         CardListing.selectedCard = null;
     }
 
@@ -217,6 +216,7 @@ public class InGame : ServerCommand, IOnEventCallback
         if (currentCardId == -1) return;
         assignMessage(PhotonNetwork.LocalPlayer,currentCardId);
         incomingManipulation.SetActive(false);
+        raiseCertainEvent(SuccessReceiveEventCode, new object[] { (int)playerSequencesByName[PhotonNetwork.LocalPlayer.NickName], currentCardId});
         raiseCertainEvent(ToEndTurnEventCode, new object[] { currentCardId });
     }
 
@@ -285,7 +285,11 @@ public class InGame : ServerCommand, IOnEventCallback
 
     public static void hideAllReceivingCardSection()
     {
-        foreach (GameObject gameObject in newPlayerReceiveCardUIs) gameObject.SetActive(false);
+        foreach (GameObject gameObject in newPlayerReceiveCardUIs)
+        {
+            gameObject.GetComponent<CanvasGroup>().alpha = 0.6f;
+            gameObject.SetActive(false);
+        }
     }
 
     IEnumerator executeCodeAfterSeconds(int secs, Player player)

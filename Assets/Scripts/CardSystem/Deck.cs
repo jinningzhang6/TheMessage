@@ -20,7 +20,7 @@ public class Deck
         deck = new List<Card>();
         for (; id < 6; id++)//Adding blue锁定卡片
         {
-            deck.Add(new Card(id, 1, 0, 0, spellCards[0],0));
+            deck.Add(new Card(id, 1, 0, 0, spellCards[0],0));//直达 密电 文本
         }
 
         for (; id < 9; id++)//Adding blue_black锁定卡片

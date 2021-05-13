@@ -17,7 +17,6 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     public Text gameRealTimeInfo;
     public GameObject game_object;
     public GameObject acceptButton;
-    public GameObject declineButton;
     private Player currentTurnPlayer;//subturn
     private SpellCardsListing spellCardsListing;
 
@@ -77,7 +76,6 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     private void SpellLock(int castPlayer, int toPlayer)
     {
         Player _player = (Player)playerSequences[$"{toPlayer}"];
-        if (currentTurnPlayer == _player) declineButton.SetActive(false);
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了锁定";
         setPlayerDebuff(_player, "locked", true, "锁");
     }
@@ -106,14 +104,14 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     private void SpellGamble(int castPlayer, int toPlayer)
     {
         Player _player = (Player)playerSequences[$"{toPlayer}"];
-        if (PhotonNetwork.IsMasterClient) inGame.assignMessageForPlayer(_player, -1);// -1 indicating assign random message for player
+        //if (PhotonNetwork.IsMasterClient) inGame.assignMessageForPlayer(_player, -1);// -1 indicating assign random message for player
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 对 {_player.NickName} 使用了博弈";
     }
 
     private void SpellIntercept(int castPlayer)
     {
         // send on going passing message card to cast player
-        if (PhotonNetwork.IsMasterClient) inGame.raiseCertainEvent(SendCardEventCode, new object[] { castPlayer, inGame.getCurrentCardId() });
+        //if (PhotonNetwork.IsMasterClient) inGame.raiseCertainEvent(SendCardEventCode, new object[] { castPlayer, inGame.getCurrentCardId() });
         gameRealTimeInfo.text = $"{((Player)playerSequences[$"{castPlayer}"]).NickName} 使用了截获";
     }
 
@@ -137,12 +135,9 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
     private void checkIfUserDebuff(Player player)
     {
         acceptButton.SetActive(true);
-        declineButton.SetActive(true);
         Hashtable table = player.CustomProperties;
         if (table == null) table = new Hashtable();
-        if (table.ContainsKey("redirected") && (bool)table["redirected"]) declineButton.SetActive(false);//redirect > lock > away
-        else if (table.ContainsKey("locked") && (bool)table["locked"]) declineButton.SetActive(false);
-        else if (table.ContainsKey("awayed") && (bool)table["awayed"]) acceptButton.SetActive(false);
+        if (table.ContainsKey("awayed") && (bool)table["awayed"]) acceptButton.SetActive(false);
     }
 
     private void resetUserDebuffUI()
@@ -152,7 +147,6 @@ public class InGameCommand : MonoBehaviourPunCallbacks, IOnEventCallback
             debuff_indicatorUI[i].SetActive(false);
         }
         acceptButton.SetActive(true);
-        declineButton.SetActive(true);
     }
 
     private void OnDestroy()
