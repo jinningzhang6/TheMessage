@@ -7,7 +7,7 @@ public class SystemDeck
     private List<int> deck = new List<int>();
     public SystemDeck()
     {
-        for(int i = 0; i < 54; i++)
+        for(int i = 0; i < 58; i++)
         {
             deck.Add(i);
         }

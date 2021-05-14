@@ -65,6 +65,10 @@ public class Deck
         deck.Add(new Card(id++, 1, 0, 0, spellCards[19], 5));//intercept_blue 2
         deck.Add(new Card(id++, 1, 0, 0, spellCards[19], 5));
         deck.Add(new Card(id++, 1, 0, 1, spellCards[20], 5));//intecept_blue_black 1
+        deck.Add(new Card(id++, 0, 1, 0, spellCards[21], 6));//gamble_all_red 1
+        deck.Add(new Card(id++, 1, 0, 0, spellCards[22], 6));//gamble_all_blue 1
+        deck.Add(new Card(id++, 0, 0, 1, spellCards[23], 7));//redraw_black 2
+        deck.Add(new Card(id++, 0, 0, 1, spellCards[23], 7));
     }
 
     public List<Card> getDeck()
