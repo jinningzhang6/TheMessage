@@ -89,6 +89,7 @@ GameObject:
   - component: {fileID: 872902758230849542}
   - component: {fileID: 367622443451891816}
   - component: {fileID: 273652182357896034}
+  - component: {fileID: 3604375859864545378}
   m_Layer: 0
   m_Name: PlayerSpells
   m_TagString: Untagged
@@ -144,7 +145,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: c7bf45f0ef95bed4491c5809fc6bf484, type: 3}
+  m_Sprite: {fileID: 0}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -188,10 +189,10 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.24705878, g: 0.35600957, b: 0.9137255, a: 1}
-    m_PressedColor: {r: 0.57502747, g: 0.121885024, b: 0.7830189, a: 1}
-    m_SelectedColor: {r: 0.24705882, g: 0.35686275, b: 0.9137255, a: 1}
+    m_NormalColor: {r: 1, g: 1, b: 1, a: 0}
+    m_HighlightedColor: {r: 0.019607844, g: 0.36862746, b: 0.03529412, a: 1}
+    m_PressedColor: {r: 0.019607844, g: 0.36862746, b: 0.03529412, a: 1}
+    m_SelectedColor: {r: 0.019607844, g: 0.36862746, b: 0.03529412, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
@@ -223,3 +224,15 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &3604375859864545378
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2141039764447049966}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2c7c79ab122117543addf178e1722e9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

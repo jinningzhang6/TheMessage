@@ -100,6 +100,7 @@ public class GameLobby : MonoBehaviourPunCallbacks
         PhotonNetwork.JoinLobby(Lobby);
     }
 
+    //Populate each Player's UI
     private void setRoomPlayersInfo()
     {
         int i = 0;
@@ -172,7 +173,6 @@ public class GameLobby : MonoBehaviourPunCallbacks
             PhotonNetwork.CurrentRoom.SetCustomProperties(table);
             PhotonNetwork.LoadLevel(2);
         }
-        
     }
 
     private List<int> shufflePositions()
@@ -184,16 +184,17 @@ public class GameLobby : MonoBehaviourPunCallbacks
         {
             list.Add(i);
         }
+        //List: 1, 2, 3
         var last = count - 1;
-        for (var i = 0; i < last; ++i)
+        for (var i = 0; i < last; ++i)//Randomize List of Players
         {
-            var r = UnityEngine.Random.Range(i, count);
+            var r = Random.Range(i, count);
             var tmp = list[i];
             list[i] = list[r];
             list[r] = tmp;
         }
 
-        return list;
+        return list;//return shuffled player list
     }
 
 }
