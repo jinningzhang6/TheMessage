@@ -7,12 +7,12 @@ public class AimingBot : MonoBehaviourPunCallbacks
 {
     public GameObject game_object;
     public GameObject AimIndicatorUI;
+    public Button msgDropZone;
 
     private UI GameUI;
     private Gateway Gateway;
     private Button charIcon;
-    private Button msgDropZone;
-
+    
     private string playerName;
     private float rotZ;
 
@@ -32,17 +32,15 @@ public class AimingBot : MonoBehaviourPunCallbacks
         GameUI = game_object.GetComponent<UI>();
         playerName = GetComponentsInChildren<Text>()[5].text;
         charIcon = GetComponentsInChildren<Button>()[0];
-        msgDropZone = GetComponentsInChildren<Button>()[10];
     }
 
     private void InitializeComponents()
     {
         if (charIcon == null) Debug.Log($"Player {playerName} Char Icon is not assigned, please check AimBot and Components Assigned here");
         if (msgDropZone == null) Debug.Log($"Player {playerName} Message DropZone is not assigned, please check AimBot and Components Assigned here");
-        Debug.Log($"msgDropZone name: {msgDropZone.name}");
         OnPointerOut(null);
-        msgDropZone.gameObject.SetActive(false);
         assignEventTriggers();
+        msgDropZone.gameObject.SetActive(false);
     }
 
     // Red Circle Animation -> Aim
@@ -87,13 +85,13 @@ public class AimingBot : MonoBehaviourPunCallbacks
 
     private void OnPointerIn(PointerEventData eventData)
     {
-        CanvasGroup canvas = msgDropZone.GetComponentsInChildren<CanvasGroup>()[0];
+        CanvasGroup canvas = msgDropZone.GetComponent<CanvasGroup>();
         canvas.alpha = 1f;
     }
 
     private void OnPointerOut(PointerEventData eventData)
     {
-        CanvasGroup canvas = msgDropZone.GetComponentsInChildren<CanvasGroup>()[0];
+        CanvasGroup canvas = msgDropZone.GetComponent<CanvasGroup>();
         canvas.alpha = 0.6f;
     }
 
@@ -117,9 +115,9 @@ public class AimingBot : MonoBehaviourPunCallbacks
         EventTrigger.Entry entry = new EventTrigger.Entry();
         EventTrigger.Entry exit = new EventTrigger.Entry();
         entry.eventID = EventTriggerType.PointerEnter;
-        entry.callback.AddListener((data) => { OnPointerIn((PointerEventData)data); });
+        entry.callback.AddListener((data) => { OnPointerIn((PointerEventData)data); });//add hover effect
         exit.eventID = EventTriggerType.PointerExit;
-        exit.callback.AddListener((data) => { OnPointerOut((PointerEventData)data); });
+        exit.callback.AddListener((data) => { OnPointerOut((PointerEventData)data); });//add mouse out effect
         drop.eventID = EventTriggerType.Drop;
         drop.callback.AddListener((data) => { OnDropToCardIndicator((PointerEventData)data); });
         trigger.triggers.Add(drop);

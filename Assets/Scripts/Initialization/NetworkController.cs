@@ -8,8 +8,8 @@ public class NetworkController: MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
-        //PhotonNetwork.ConnectToRegion("usw");
         PhotonNetwork.ConnectUsingSettings();
+        PhotonNetwork.ConnectToRegion("usw");
     }
 
     public override void OnConnectedToMaster()

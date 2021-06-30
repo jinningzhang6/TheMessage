@@ -258,8 +258,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c80c366c64d2bcb469fd04c8829d8642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameScene: {fileID: 0}
-  CardsDeckUI: []
+  GameScene: {fileID: 33263942}
+  CardsDeckUI:
+  - {fileID: 1603773547}
+  - {fileID: 1785402758}
+  - {fileID: 1626528307}
+  - {fileID: 1406917013}
+  - {fileID: 144541281}
 --- !u!114 &17025370
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -534,7 +539,7 @@ MonoBehaviour:
   playerTurnUI: {fileID: 205549735}
   cardsLeftUI: {fileID: 15640764}
   reminderText: {fileID: 1277040469}
-  openCard: {fileID: 933440975}
+  openCard: {fileID: 1601503201}
   burnCardWindow: {fileID: 1934418587}
   passingCardPosition: {x: 0, y: 0, z: 0}
   assigningCardPosition: {x: 0, y: 0, z: 0}
@@ -890,7 +895,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 98013997}
+  msgDropZone: {fileID: 961283377}
 --- !u!114 &98013995
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -933,6 +939,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &98013997 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 98013989}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &102645217
 GameObject:
   m_ObjectHideFlags: 0
@@ -2146,7 +2157,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 379367503}
+  msgDropZone: {fileID: 1146396480}
 --- !u!114 &379367501
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2189,6 +2201,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &379367503 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 379367495}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &412294926
 GameObject:
   m_ObjectHideFlags: 0
@@ -2475,7 +2492,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 434648729}
+  msgDropZone: {fileID: 701320170}
 --- !u!114 &434648727
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2518,6 +2536,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &434648729 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 434648721}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &452909855
 GameObject:
   m_ObjectHideFlags: 0
@@ -2665,7 +2688,7 @@ GameObject:
   - component: {fileID: 498894719}
   - component: {fileID: 498894718}
   m_Layer: 0
-  m_Name: PassingCard1
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2815,7 +2838,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 685690212371044787}
+  msgDropZone: {fileID: 1315052495}
 --- !u!114 &503944666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3010,7 +3034,7 @@ GameObject:
   - component: {fileID: 701320170}
   - component: {fileID: 701320169}
   m_Layer: 0
-  m_Name: PassingCard5
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3198,8 +3222,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c80c366c64d2bcb469fd04c8829d8642, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GameScene: {fileID: 0}
-  CardsDeckUI: []
+  GameScene: {fileID: 33263942}
+  CardsDeckUI:
+  - {fileID: 278149302}
+  - {fileID: 1073512803}
+  - {fileID: 287039893}
+  - {fileID: 1097325263}
+  - {fileID: 1554617805}
 --- !u!114 &724198289
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3663,7 +3692,7 @@ GameObject:
   - component: {fileID: 961283378}
   - component: {fileID: 961283377}
   m_Layer: 0
-  m_Name: PassingCard6
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3949,7 +3978,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 962877940}
+  msgDropZone: {fileID: 498894717}
 --- !u!114 &962877938
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3992,6 +4022,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &962877940 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 962877932}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &987840435
 GameObject:
   m_ObjectHideFlags: 0
@@ -4349,7 +4384,7 @@ GameObject:
   - component: {fileID: 1146396480}
   - component: {fileID: 1146396479}
   m_Layer: 0
-  m_Name: PassingCard7
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4619,7 +4654,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 1239998668}
+  msgDropZone: {fileID: 1453045879}
 --- !u!114 &1208249591
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4897,6 +4933,11 @@ MonoBehaviour:
 --- !u!1 &1239998667 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 7329538495318486597, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 1239998662}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &1239998668 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
   m_PrefabInstance: {fileID: 1239998662}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &1266881400
@@ -5337,7 +5378,7 @@ GameObject:
   - component: {fileID: 1315052496}
   - component: {fileID: 1315052495}
   m_Layer: 0
-  m_Name: PassingCard8
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5899,7 +5940,7 @@ GameObject:
   - component: {fileID: 1453045878}
   - component: {fileID: 1453045879}
   m_Layer: 0
-  m_Name: PassingCard2
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7166,7 +7207,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2141039764447049966, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
       propertyPath: m_Name
-      value: PlayerDeck
+      value: PlayerReceivingCard
       objectReference: {fileID: 0}
     - target: {fileID: 2141039764447049966, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
       propertyPath: m_IsActive
@@ -7259,6 +7300,11 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 6786742159909059615, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
+--- !u!1 &1601503201 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2141039764447049966, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
+  m_PrefabInstance: {fileID: 1601503200}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &1601503202 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2141039764447049967, guid: e63410b029b5a53478aa59156e4013aa, type: 3}
@@ -7399,7 +7445,7 @@ GameObject:
   - component: {fileID: 1614654424}
   - component: {fileID: 1614654423}
   m_Layer: 0
-  m_Name: PassingCard4
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7805,7 +7851,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 1641706927}
+  msgDropZone: {fileID: 1873114706}
 --- !u!114 &1641706925
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7848,6 +7895,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &1641706927 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 1641706919}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1682120795
 GameObject:
   m_ObjectHideFlags: 0
@@ -9043,7 +9095,7 @@ GameObject:
   - component: {fileID: 1873114707}
   - component: {fileID: 1873114706}
   m_Layer: 0
-  m_Name: PassingCard3
+  m_Name: PassingCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -9708,7 +9760,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   game_object: {fileID: 33263942}
-  AimIndicatorUI: {fileID: 0}
+  AimIndicatorUI: {fileID: 2129932102}
+  msgDropZone: {fileID: 1614654423}
 --- !u!114 &2129932100
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9751,6 +9804,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &2129932102 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 2129932094}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &327841645352021272
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -10020,6 +10078,11 @@ MonoBehaviour:
             m_StringArgument: 
             m_BoolArgument: 0
           m_CallState: 2
+--- !u!1 &685690212371044787 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8253960923081144577, guid: 3c614c8b0fb90ce44bcfa3eecc42cdf2, type: 3}
+  m_PrefabInstance: {fileID: 685690212371044783}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1173258542160616433
 PrefabInstance:
   m_ObjectHideFlags: 0

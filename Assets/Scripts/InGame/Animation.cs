@@ -30,12 +30,12 @@ public class Animation : MonoBehaviourPunCallbacks
     // Update is called once per frame
     void Update()
     {
-        if (inGame.shouldAnimatePassingCard && !DraggerSystem.onDraggingCard)
+        if (inGame.shouldAnimatePassingCard)
         {
             passingCardLive.SetActive(true);
             passingCardLive.transform.position = Vector3.Lerp(passingCardLive.transform.position, inGame.passingCardPosition, 5 * Time.deltaTime);
         }
-        else if(!inGame.shouldAnimatePassingCard && !DraggerSystem.onDraggingCard){
+        else if(!inGame.shouldAnimatePassingCard){
             passingCardLive.SetActive(false);
         }
         if (inGame.shouldAnimateAssigningCard)

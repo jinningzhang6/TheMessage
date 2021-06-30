@@ -41,6 +41,7 @@ public class GameLobby : MonoBehaviourPunCallbacks
         instantiateWindow();
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.ConnectUsingSettings();
+        PhotonNetwork.ConnectToRegion("usw");
     }
 
     public void instantiateWindow()

@@ -210,12 +210,14 @@ public class UI : MonoBehaviourPunCallbacks
 
     public void showPassingCard(Player player)
     {
+        Debug.Log("show my pass card");
         shouldAnimatePassingCard = true;
         passingCardPosition = newPassingCardUIs[Gateway.GetPositionByPlayer(player)].transform.position;
     }
 
     public void hidePassingCard()
     {
+        Debug.Log("hide my pass card");
         shouldAnimatePassingCard = false;
     }
 
@@ -244,12 +246,12 @@ public class UI : MonoBehaviourPunCallbacks
     IEnumerator executeCodeAfterSecondsForReceiveCard(int secs,int receivedCard)
     {
         openCard.SetActive(true);
-        openCard.GetComponent<Image>().sprite = Server.Deck[receivedCard].image;
-        openCard.GetComponent<Image>().color = new Color(1, 1, 1, 1);
+        openCard.GetComponentInChildren<Image>().sprite = Server.Deck[receivedCard].image;
+        openCard.GetComponentInChildren<Image>().color = new Color(1, 1, 1, 1);
         yield return new WaitForSeconds(secs);
         for (float i = 1; i >= 0; i -= Time.deltaTime)
         {
-            openCard.GetComponent<Image>().color = new Color(1, 1, 1, i);
+            openCard.GetComponentInChildren<Image>().color = new Color(1, 1, 1, i);
             yield return null;
         }
         openCard.SetActive(false);
